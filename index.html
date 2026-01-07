@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>This Shit Is Fake — Public Archive</title>
+  
+  <!-- PapaParse -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+  
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --accent-color: #e74c3c;
+      --success-color: #27ae60;
+      --warning-color: #f39c12;
+      --light-bg: #f8f9fa;
+      --border-color: #dee2e6;
+      --text-color: #333;
+      --light-text: #6c757d;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: var(--text-color);
+      background-color: var(--light-bg);
+      padding: 0;
+      margin: 0;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+    
+    /* Header Styles */
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1rem 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo img {
+      height: 90px;
+      margin-right: 10px;
+    }
+    
+    /* Navigation Styles */
+    nav ul {
+      display: flex;
+      list-style: none;
+    }
+    
+    nav ul li {
+      margin-left: 20px;
+    }
+    
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    
+    nav ul li a:hover {
+      color: var(--secondary-color);
+    }
+    
+    /* Mobile Menu Toggle */
+    .menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+    
+    /* Main Content Styles */
+    main {
+      padding: 2rem 0;
+    }
+    
+    .section {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    
+    .section-title {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+      border-bottom: 2px solid var(--secondary-color);
+      padding-bottom: 0.5rem;
+    }
+    
+    /* Statistics Section */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+      background-color: white;
+      border-radius: 8px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transition: transform 0.3s;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+      color: var(--light-text);
+      font-size: 0.9rem;
+    }
+    
+    .stat-fake { color: var(--accent-color); }
+    .stat-doubtful { color: var(--warning-color); }
+    .stat-valid { color: var(--success-color); }
+    .stat-total { color: var(--primary-color); }
+    
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin: 2rem 0;
+    }
+    
+    /* Search and Filter Section */
+    .search-filter-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+    
+    .search-box input {
+      width: 100%;
+      padding: 0.75rem 2.5rem 0.75rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    
+    .search-box i {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--light-text);
+    }
+    
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .filter-group select {
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+      background-color: white;
+    }
+    
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .btn-primary {
+      background-color: var(--secondary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #2980b9;
+    }
+    
+    .btn-secondary {
+      background-color: var(--light-text);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #5a6268;
+    }
+    
+    /* Table Styles */
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+    }
+    
+    table.data {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    
+    table.data th, table.data td {
+      padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    table.data th {
+      background-color: var(--light-bg);
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    table.data th:hover {
+      background-color: #e9ecef;
+    }
+    
+    table.data th i {
+      margin-left: 5px;
+      font-size: 0.8rem;
+      color: var(--light-text);
+    }
+    
+    table.data tr:hover {
+      background-color: #f8f9fa;
+    }
+    
+    .status-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+    
+    .status-fake {
+      background-color: rgba(231, 76, 60, 0.2);
+      color: var(--accent-color);
+    }
+    
+    .status-doubtful {
+      background-color: rgba(243, 156, 18, 0.2);
+      color: var(--warning-color);
+    }
+    
+    .status-valid {
+      background-color: rgba(39, 174, 96, 0.2);
+      color: var(--success-color);
+    }
+    
+    /* Pagination */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin: 1.5rem 0;
+    }
+    
+    .page-btn {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border-color);
+      background-color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .page-btn:hover {
+      background-color: var(--light-bg);
+    }
+    
+    .page-btn.active {
+      background-color: var(--secondary-color);
+      color: white;
+      border-color: var(--secondary-color);
+    }
+    
+    .page-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    /* Entry Detail Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+      overflow-y: auto;
+    }
+    
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 800px;
+      position: relative;
+      animation: modalopen 0.4s;
+    }
+    
+    @keyframes modalopen {
+      from {opacity: 0; transform: translateY(-20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    
+    .close-modal {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--light-text);
+    }
+    
+    .close-modal:hover {
+      color: var(--text-color);
+    }
+    
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .detail-section {
+      margin-bottom: 1.5rem;
+    }
+    
+    .detail-label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--primary-color);
+    }
+    
+    .detail-content {
+      margin-bottom: 1.5rem;
+    }
+    
+    .evidence-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .evidence-item {
+      flex: 1;
+      min-width: 200px;
+      max-width: 300px;
+    }
+    
+    .evidence-item img {
+      width: 100%;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+    }
+    
+    .share-buttons {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+    
+    .share-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+    
+    .share-btn:hover {
+      opacity: 0.8;
+    }
+    
+    .share-facebook { background-color: #1877f2; }
+    .share-twitter { background-color: #1da1f2; }
+    .share-whatsapp { background-color: #25d366; }
+    .share-link { background-color: var(--secondary-color); }
+    
+    /* Loading Indicator */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+    
+    .spinner {
+      border: 4px solid rgba(0,0,0,0.1);
+      border-radius: 50%;
+      border-top: 4px solid var(--secondary-color);
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* Error Message */
+    .error-message {
+      display: none;
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+    
+    /* Footer */
+    footer {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 2rem 0;
+      margin-top: 3rem;
+    }
+    
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .footer-section h3 {
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+    
+    .footer-section ul {
+      list-style: none;
+    }
+    
+    .footer-section ul li {
+      margin-bottom: 0.5rem;
+    }
+    
+    .footer-section a {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    .footer-section a:hover {
+      color: white;
+    }
+    
+    .footer-bottom {
+      text-align: center;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.8);
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      nav ul {
+        flex-direction: column;
+        text-align: center;
+        width: 100%;
+      }
+      
+      nav ul li {
+        margin: 0.5rem 0;
+      }
+      
+      .menu-toggle {
+        display: block;
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+      }
+      
+      .nav-menu {
+        display: none;
+        width: 100%;
+      }
+      
+      .nav-menu.active {
+        display: block;
+      }
+      
+      .search-filter-container {
+        flex-direction: column;
+      }
+      
+      .search-box {
+        width: 100%;
+      }
+      
+      .table-container {
+        font-size: 0.8rem;
+      }
+      
+      table.data th, table.data td {
+        padding: 0.5rem;
+      }
+      
+      .hide-mobile {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container header-container">
+      <div class="logo">
+        <img src="https://i.postimg.cc/vHX74rpR/20251231-205105-removebg-preview.webp" alt="This Shit Is Fake">
+      </div>
+      <button class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+      </button>
+      <nav class="nav-menu" id="navMenu">
+        <ul>
+          <li><a href="#home">HOME</a></li>
+          <li><a href="#database">DATABASE</a></li>
+          <li><a href="#statistics">STATISTIK</a></li>
+          <li><a href="#metodologi">METODOLOGI</a></li>
+          <li><a href="https://forms.gle/RZGH6PMcwJiUFAiW8" target="_blank">SUBMIT</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <!-- Statistics Section -->
+      <section id="statistics" class="section">
+        <h2 class="section-title">Statistik Verifikasi</h2>
+        <div class="stats-container">
+          <div class="stat-card">
+            <div class="stat-number stat-fake" id="fakeCount">0</div>
+            <div class="stat-label">Konten Palsu</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number stat-doubtful" id="doubtfulCount">0</div>
+            <div class="stat-label">Konten Meragukan</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number stat-valid" id="validCount">0</div>
+            <div class="stat-label">Konten Valid</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number stat-total" id="totalCount">0</div>
+            <div class="stat-label">Total Verifikasi</div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </section>
+
+      <!-- Database Section -->
+      <section id="database" class="section">
+        <h2 class="section-title">Database Terverifikasi</h2>
+        <p>Hanya entri yang telah ditinjau manual ditampilkan di halaman ini.</p>
+        
+        <div class="error-message" id="errorMessage">
+          <i class="fas fa-exclamation-triangle"></i> Gagal memuat data. Silakan coba lagi nanti.
+        </div>
+        
+        <div class="loading" id="loadingIndicator">
+          <div class="spinner"></div>
+          <p>Memuat data...</p>
+        </div>
+        
+        <div class="search-filter-container">
+          <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Cari berdasarkan deskripsi, platform, atau identitas...">
+            <i class="fas fa-search"></i>
+          </div>
+          <div class="filter-group">
+            <label for="statusFilter">Status:</label>
+            <select id="statusFilter">
+              <option value="ALL">SEMUA</option>
+              <option value="FAKE">FAKE</option>
+              <option value="MERAGUKAN">MERAGUKAN</option>
+              <option value="VALID">VALID</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="platformFilter">Platform:</label>
+            <select id="platformFilter">
+              <option value="ALL">SEMUA</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="typeFilter">Jenis Konten:</label>
+            <select id="typeFilter">
+              <option value="ALL">SEMUA</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="filterBtn">
+            <i class="fas fa-filter"></i> Terapkan Filter
+          </button>
+          <button class="btn btn-secondary" id="resetBtn">
+            <i class="fas fa-redo"></i> Reset
+          </button>
+          <button class="btn btn-primary" id="exportBtn">
+            <i class="fas fa-download"></i> Export
+          </button>
+        </div>
+        
+        <div class="table-container">
+          <table class="data">
+            <thead>
+              <tr id="tableHead"></tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+        
+        <div class="pagination" id="pagination"></div>
+      </section>
+
+      <!-- Methodology Section -->
+      <section id="metodologi" class="section">
+        <h2 class="section-title">Metodologi</h2>
+        <p>Setiap laporan diperiksa secara manual berdasarkan bukti, konsistensi informasi, dan sumber terkait. Status diberikan oleh verifikator, bukan oleh pelapor.</p>
+        <ul>
+          <li><b>FAKE</b>: Konten terbukti palsu atau menyesatkan.</li>
+          <li><b>MERAGUKAN</b>: Indikasi kuat namun bukti belum lengkap.</li>
+          <li><b>VALID</b>: Informasi benar atau tidak menyesatkan.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <!-- Entry Detail Modal -->
+  <div class="modal" id="detailModal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeModal">&times;</span>
+      <div class="detail-header">
+        <h2 id="modalTitle">Detail Verifikasi</h2>
+        <span id="modalStatus" class="status-badge"></span>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Tanggal Laporan</div>
+        <div class="detail-content" id="modalDate"></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Pelapor</div>
+        <div class="detail-content" id="modalReporter"></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Jenis Konten</div>
+        <div class="detail-content" id="modalContentType"></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Platform</div>
+        <div class="detail-content" id="modalPlatform"></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Identitas</div>
+        <div class="detail-content" id="modalIdentity"></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Deskripsi</div>
+        <div class="detail-content" id="modalDescription"></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-label">Bukti</div>
+        <div class="evidence-container" id="modalEvidence"></div>
+      </div>
+      <div class="share-buttons">
+        <button class="share-btn share-facebook" id="shareFacebook">
+          <i class="fab fa-facebook-f"></i> Facebook
+        </button>
+        <button class="share-btn share-twitter" id="shareTwitter">
+          <i class="fab fa-twitter"></i> Twitter
+        </button>
+        <button class="share-btn share-whatsapp" id="shareWhatsapp">
+          <i class="fab fa-whatsapp"></i> WhatsApp
+        </button>
+        <button class="share-btn share-link" id="copyLink">
+          <i class="fas fa-link"></i> Salin Link
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Tentang Kami</h3>
+          <p>This Shit Is Fake adalah arsip publik verifikasi konten untuk membantu masyarakat mengidentifikasi informasi yang salah atau menyesatkan.</p>
+        </div>
+        <div class="footer-section">
+          <h3>Menu Cepat</h3>
+          <ul>
+            <li><a href="#home">Beranda</a></li>
+            <li><a href="#database">Database</a></li>
+            <li><a href="#statistics">Statistik</a></li>
+            <li><a href="#metodologi">Metodologi</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Kontak</h3>
+          <ul>
+            <li><i class="fas fa-envelope"></i> info@thisshitisfake.org</li>
+            <li><i class="fas fa-phone"></i> +62 123 456 789</li>
+            <li><i class="fas fa-map-marker-alt"></i> Jakarta, Indonesia</li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h3>Ikuti Kami</h3>
+          <ul>
+            <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
+            <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+            <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
+            <li><a href="#"><i class="fab fa-youtube"></i> YouTube</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>This Shit Is Fake © 2026 — Public Verification Archive</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Data source
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRYiG9ml0O9tdYsf8UXrm9bOpcqIrFgzoBXafLxt6L5kWwWxy1FQfCtaKhcnskkTk7wcDY8yUJGn33B/pub?output=csv";
+    
+    // Configuration
+    const headerMap = {
+      "Timestamp": "Tanggal",
+      "Are you a victim?": "Pelapor",
+      "Type of content:": "Jenis Konten",
+      "What Platform?": "Platform",
+      "Link / Username / Identifier": "Identitas",
+      "Description ": "Deskripsi",
+      "Evidence Upload": "Bukti",
+      "STATUS": "Status"
+    };
+    
+    const pageSize = 10;
+    let allData = [];
+    let filteredData = [];
+    let currentPage = 1;
+    let sortColumn = null;
+    let sortDirection = 'asc';
+    let statusChart = null;
+    
+    // DOM Elements
+    const tableHead = document.getElementById("tableHead");
+    const tableBody = document.getElementById("tableBody");
+    const pagination = document.getElementById("pagination");
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const platformFilter = document.getElementById("platformFilter");
+    const typeFilter = document.getElementById("typeFilter");
+    const filterBtn = document.getElementById("filterBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const exportBtn = document.getElementById("exportBtn");
+    const loadingIndicator = document.getElementById("loadingIndicator");
+    const errorMessage = document.getElementById("errorMessage");
+    const detailModal = document.getElementById("detailModal");
+    const closeModal = document.getElementById("closeModal");
+    const menuToggle = document.getElementById("menuToggle");
+    const navMenu = document.getElementById("navMenu");
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      loadData();
+      setupEventListeners();
+    });
+    
+    // Load data from CSV
+    function loadData() {
+      loadingIndicator.style.display = 'block';
+      errorMessage.style.display = 'none';
+      
+      Papa.parse(csvUrl, {
+        download: true,
+        header: true,
+        complete: function(results) {
+          loadingIndicator.style.display = 'none';
+          
+          if (results.errors.length > 0) {
+            errorMessage.style.display = 'block';
+            console.error("Error parsing CSV:", results.errors);
+            return;
+          }
+          
+          allData = results.data.filter(row => row.STATUS);
+          filteredData = [...allData];
+          
+          buildHeader();
+          populateFilters();
+          updateStatistics();
+          renderTable();
+          renderPagination();
+        },
+        error: function(error) {
+          loadingIndicator.style.display = 'none';
+          errorMessage.style.display = 'block';
+          console.error("Error loading data:", error);
+        }
+      });
+    }
+    
+    // Setup event listeners
+    function setupEventListeners() {
+      // Search
+      searchInput.addEventListener('input', function() {
+        applyFilters();
+      });
+      
+      // Filters
+      filterBtn.addEventListener('click', function() {
+        applyFilters();
+      });
+      
+      resetBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        statusFilter.value = 'ALL';
+        platformFilter.value = 'ALL';
+        typeFilter.value = 'ALL';
+        applyFilters();
+      });
+      
+      // Export
+      exportBtn.addEventListener('click', function() {
+        exportData();
+      });
+      
+      // Modal
+      closeModal.addEventListener('click', function() {
+        detailModal.style.display = 'none';
+      });
+      
+      window.addEventListener('click', function(event) {
+        if (event.target === detailModal) {
+          detailModal.style.display = 'none';
+        }
+      });
+      
+      // Mobile menu
+      menuToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('active');
+      });
+      
+      // Share buttons
+      document.getElementById('shareFacebook').addEventListener('click', function() {
+        shareOnFacebook();
+      });
+      
+      document.getElementById('shareTwitter').addEventListener('click', function() {
+        shareOnTwitter();
+      });
+      
+      document.getElementById('shareWhatsapp').addEventListener('click', function() {
+        shareOnWhatsapp();
+      });
+      
+      document.getElementById('copyLink').addEventListener('click', function() {
+        copyLinkToClipboard();
+      });
+    }
+    
+    // Build table header
+    function buildHeader() {
+      tableHead.innerHTML = '';
+      
+      Object.entries(headerMap).forEach(([key, label]) => {
+        const th = document.createElement("th");
+        th.textContent = label;
+        th.dataset.column = key;
+        
+        // Add sort icon
+        const icon = document.createElement('i');
+        icon.className = 'fas fa-sort';
+        th.appendChild(icon);
+        
+        // Add click event for sorting
+        th.addEventListener('click', function() {
+          sortByColumn(key);
+        });
+        
+        tableHead.appendChild(th);
+      });
+      
+      // Add action column
+      const actionTh = document.createElement("th");
+      actionTh.textContent = 'Aksi';
+      tableHead.appendChild(actionTh);
+    }
+    
+    // Populate filter dropdowns
+    function populateFilters() {
+      // Get unique platforms
+      const platforms = [...new Set(allData.map(row => row['What Platform?']).filter(Boolean))];
+      platformFilter.innerHTML = '<option value="ALL">SEMUA</option>';
+      platforms.forEach(platform => {
+        const option = document.createElement('option');
+        option.value = platform;
+        option.textContent = platform;
+        platformFilter.appendChild(option);
+      });
+      
+      // Get unique content types
+      const types = [...new Set(allData.map(row => row['Type of content:']).filter(Boolean))];
+      typeFilter.innerHTML = '<option value="ALL">SEMUA</option>';
+      types.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        typeFilter.appendChild(option);
+      });
+    }
+    
+    // Update statistics
+    function updateStatistics() {
+      const fakeCount = allData.filter(row => row.STATUS === 'FAKE').length;
+      const doubtfulCount = allData.filter(row => row.STATUS === 'MERAGUKAN').length;
+      const validCount = allData.filter(row => row.STATUS === 'VALID').length;
+      const totalCount = allData.length;
+      
+      document.getElementById('fakeCount').textContent = fakeCount;
+      document.getElementById('doubtfulCount').textContent = doubtfulCount;
+      document.getElementById('validCount').textContent = validCount;
+      document.getElementById('totalCount').textContent = totalCount;
+      
+      // Update chart
+      updateStatusChart(fakeCount, doubtfulCount, validCount);
+    }
+    
+    // Update status chart
+    function updateStatusChart(fakeCount, doubtfulCount, validCount) {
+      const ctx = document.getElementById('statusChart').getContext('2d');
+      
+      if (statusChart) {
+        statusChart.destroy();
+      }
+      
+      statusChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['FAKE', 'MERAGUKAN', 'VALID'],
+          datasets: [{
+            data: [fakeCount, doubtfulCount, validCount],
+            backgroundColor: [
+              'rgba(231, 76, 60, 0.7)',
+              'rgba(243, 156, 18, 0.7)',
+              'rgba(39, 174, 96, 0.7)'
+            ],
+            borderColor: [
+              'rgba(231, 76, 60, 1)',
+              'rgba(243, 156, 18, 1)',
+              'rgba(39, 174, 96, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+            },
+            title: {
+              display: true,
+              text: 'Distribusi Status Verifikasi'
+            }
+          }
+        }
+      });
+    }
+    
+    // Apply filters
+    function applyFilters() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const statusValue = statusFilter.value;
+      const platformValue = platformFilter.value;
+      const typeValue = typeFilter.value;
+      
+      filteredData = allData.filter(row => {
+        // Search filter
+        const matchesSearch = !searchTerm || 
+          (row['Description '] && row['Description '].toLowerCase().includes(searchTerm)) ||
+          (row['What Platform?'] && row['What Platform?'].toLowerCase().includes(searchTerm)) ||
+          (row['Link / Username / Identifier'] && row['Link / Username / Identifier'].toLowerCase().includes(searchTerm));
+        
+        // Status filter
+        const matchesStatus = statusValue === 'ALL' || row.STATUS === statusValue;
+        
+        // Platform filter
+        const matchesPlatform = platformValue === 'ALL' || row['What Platform?'] === platformValue;
+        
+        // Type filter
+        const matchesType = typeValue === 'ALL' || row['Type of content:'] === typeValue;
+        
+        return matchesSearch && matchesStatus && matchesPlatform && matchesType;
+      });
+      
+      currentPage = 1;
+      renderTable();
+      renderPagination();
+    }
+    
+    // Sort by column
+    function sortByColumn(column) {
+      if (sortColumn === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn = column;
+        sortDirection = 'asc';
+      }
+      
+      filteredData.sort((a, b) => {
+        const valueA = a[column] || '';
+        const valueB = b[column] || '';
+        
+        if (sortDirection === 'asc') {
+          return valueA > valueB ? 1 : -1;
+        } else {
+          return valueA < valueB ? 1 : -1;
+        }
+      });
+      
+      // Update sort icons
+      document.querySelectorAll('th i').forEach(icon => {
+        icon.className = 'fas fa-sort';
+      });
+      
+      const currentIcon = document.querySelector(`th[data-column="${column}"] i`);
+      if (currentIcon) {
+        currentIcon.className = sortDirection === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+      }
+      
+      renderTable();
+    }
+    
+    // Render table
+    function renderTable() {
+      tableBody.innerHTML = '';
+      
+      const start = (currentPage - 1) * pageSize;
+      const end = start + pageSize;
+      const pageData = filteredData.slice(start, end);
+      
+      if (pageData.length === 0) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = Object.keys(headerMap).length + 1;
+        td.textContent = 'Tidak ada data yang cocok dengan filter yang dipilih.';
+        td.style.textAlign = 'center';
+        tr.appendChild(td);
+        tableBody.appendChild(tr);
+        return;
+      }
+      
+      pageData.forEach((row, index) => {
+        const tr = document.createElement('tr');
+        
+        Object.entries(headerMap).forEach(([key, label]) => {
+          const td = document.createElement('td');
+          let value = row[key] || '';
+          
+          // Format status
+          if (key === 'STATUS') {
+            const badge = document.createElement('span');
+            badge.className = `status-badge status-${value.toLowerCase()}`;
+            badge.textContent = value;
+            td.appendChild(badge);
+          } 
+          // Format date
+          else if (key === 'Timestamp') {
+            const date = new Date(value);
+            td.textContent = date.toLocaleDateString('id-ID');
+          }
+          // Truncate long text
+          else if (key === 'Description ') {
+            if (value.length > 100) {
+              td.textContent = value.substring(0, 100) + '...';
+            } else {
+              td.textContent = value;
+            }
+          }
+          // Make links clickable
+          else if (key === 'Link / Username / Identifier' && value.startsWith('http')) {
+            const link = document.createElement('a');
+            link.href = value;
+            link.textContent = value.length > 30 ? value.substring(0, 30) + '...' : value;
+            link.target = '_blank';
+            td.appendChild(link);
+          }
+          else {
+            td.textContent = value;
+          }
+          
+          tr.appendChild(td);
+        });
+        
+        // Add action button
+        const actionTd = document.createElement('td');
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'btn btn-primary';
+        viewBtn.innerHTML = '<i class="fas fa-eye"></i> Detail';
+        viewBtn.addEventListener('click', function() {
+          showDetail(row);
+        });
+        actionTd.appendChild(viewBtn);
+        tr.appendChild(actionTd);
+        
+        tableBody.appendChild(tr);
+      });
+    }
+    
+    // Render pagination
+    function renderPagination() {
+      pagination.innerHTML = '';
+      
+      const totalPages = Math.ceil(filteredData.length / pageSize);
+      
+      if (totalPages <= 1) return;
+      
+      // Previous button
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'page-btn';
+      prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.addEventListener('click', function() {
+        if (currentPage > 1) {
+          currentPage--;
+          renderTable();
+          renderPagination();
+        }
+      });
+      pagination.appendChild(prevBtn);
+      
+      // Page numbers
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, startPage + 4);
+      
+      if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = 'page-btn';
+        if (i === currentPage) {
+          pageBtn.classList.add('active');
+        }
+        pageBtn.textContent = i;
+        pageBtn.addEventListener('click', function() {
+          currentPage = i;
+          renderTable();
+          renderPagination();
+        });
+        pagination.appendChild(pageBtn);
+      }
+      
+      // Next button
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'page-btn';
+      nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.addEventListener('click', function() {
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderTable();
+          renderPagination();
+        }
+      });
+      pagination.appendChild(nextBtn);
+    }
+    
+    // Show detail modal
+    function showDetail(row) {
+      document.getElementById('modalTitle').textContent = 'Detail Verifikasi';
+      
+      const statusBadge = document.getElementById('modalStatus');
+      statusBadge.className = `status-badge status-${row.STATUS.toLowerCase()}`;
+      statusBadge.textContent = row.STATUS;
+      
+      const date = new Date(row.Timestamp);
+      document.getElementById('modalDate').textContent = date.toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      
+      document.getElementById('modalReporter').textContent = row['Are you a victim?'] || '-';
+      document.getElementById('modalContentType').textContent = row['Type of content:'] || '-';
+      document.getElementById('modalPlatform').textContent = row['What Platform?'] || '-';
+      
+      const identity = row['Link / Username / Identifier'] || '-';
+      const identityElement = document.getElementById('modalIdentity');
+      if (identity.startsWith('http')) {
+        const link = document.createElement('a');
+        link.href = identity;
+        link.textContent = identity;
+        link.target = '_blank';
+        identityElement.innerHTML = '';
+        identityElement.appendChild(link);
+      } else {
+        identityElement.textContent = identity;
+      }
+      
+      document.getElementById('modalDescription').textContent = row['Description '] || '-';
+      
+      // Handle evidence
+      const evidenceContainer = document.getElementById('modalEvidence');
+      evidenceContainer.innerHTML = '';
+      
+      const evidence = row['Evidence Upload'] || '';
+      if (evidence) {
+        const evidenceLinks = evidence.split(',').map(link => link.trim());
+        evidenceLinks.forEach(link => {
+          if (link) {
+            const evidenceItem = document.createElement('div');
+            evidenceItem.className = 'evidence-item';
+            
+            if (link.match(/\.(jpeg|jpg|gif|png)$/i)) {
+              const img = document.createElement('img');
+              img.src = link;
+              img.alt = 'Bukti';
+              evidenceItem.appendChild(img);
+            } else {
+              const a = document.createElement('a');
+              a.href = link;
+              a.textContent = link.length > 30 ? link.substring(0, 30) + '...' : link;
+              a.target = '_blank';
+              evidenceItem.appendChild(a);
+            }
+            
+            evidenceContainer.appendChild(evidenceItem);
+          }
+        });
+      } else {
+        evidenceContainer.textContent = 'Tidak ada bukti yang tersedia.';
+      }
+      
+      // Store current entry data for sharing
+      window.currentEntry = {
+        title: 'Verifikasi Konten: ' + (row['Description '] || '').substring(0, 50) + '...',
+        url: window.location.href + '#entry-' + (row.Timestamp || Date.now()),
+        description: 'Status: ' + row.STATUS
+      };
+      
+      detailModal.style.display = 'block';
+    }
+    
+    // Export data
+    function exportData() {
+      const csv = Papa.unparse(filteredData.map(row => {
+        const exportRow = {};
+        Object.entries(headerMap).forEach(([key, label]) => {
+          exportRow[label] = row[key] || '';
+        });
+        return exportRow;
+      }));
+      
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'thisshitisfake_export.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    
+    // Social sharing functions
+    function shareOnFacebook() {
+      const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.currentEntry.url)}`;
+      window.open(url, '_blank', 'width=600,height=400');
+    }
+    
+    function shareOnTwitter() {
+      const text = `${window.currentEntry.title} - ${window.currentEntry.description}`;
+      const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.currentEntry.url)}`;
+      window.open(url, '_blank', 'width=600,height=400');
+    }
+    
+    function shareOnWhatsapp() {
+      const text = `${window.currentEntry.title} - ${window.currentEntry.description} ${window.currentEntry.url}`;
+      const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    }
+    
+    function copyLinkToClipboard() {
+      const textarea = document.createElement('textarea');
+      textarea.value = window.currentEntry.url;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      
+      // Show feedback
+      const copyBtn = document.getElementById('copyLink');
+      const originalText = copyBtn.innerHTML;
+      copyBtn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+      setTimeout(() => {
+        copyBtn.innerHTML = originalText;
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
