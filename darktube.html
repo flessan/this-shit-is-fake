@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>DarkTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --card: #181818;
+      --text: #f1f1f1;
+      --accent: #ff4444;
+      --hover: #272727;
+      --border: #333;
+      --muted: #aaa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Roboto', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    /* Header */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 56px;
+      background: var(--card);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      z-index: 1000;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .menu-btn {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+
+    .menu-btn:hover {
+      background: var(--hover);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--accent);
+      text-decoration: none;
+      user-select: none;
+    }
+    .logo-img {
+      height: 32px;
+      width: auto;
+      display: block;
+      image-rendering: auto;
+      vertical-align: middle;
+    }
+
+    /* Custom search bar and stats */
+    .search {
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0 6px 0 12px;
+      margin: 0 16px;
+      max-width: 400px;
+      flex: 1;
+    }
+    .search input[type="search"] {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      outline: none;
+      font-size: 16px;
+      flex: 1;
+      padding: 8px 0;
+    }
+    .search .btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 18px;
+      cursor: pointer;
+      margin-left: 4px;
+      display: flex;
+      align-items: center;
+    }
+
+    .mini-stats {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+      margin-left: 16px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      width: 240px;
+      height: calc(100vh - 56px);
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      transition: transform 0.2s;
+      z-index: 900;
+    }
+
+    .sidebar.collapsed {
+      transform: translateX(-240px);
+    }
+
+    .sidebar-section {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 10px 24px;
+      color: var(--text);
+      text-decoration: none;
+      transition: 0.2s;
+      cursor: pointer;
+      border-right: 3px solid transparent;
+    }
+
+    .sidebar-item:hover,
+    .sidebar-item.active {
+      background: var(--hover);
+    }
+
+    .sidebar-item.active {
+      border-right: 3px solid var(--accent);
+    }
+
+    .sidebar-icon {
+      font-size: 20px;
+      width: 24px;
+      text-align: center;
+    }
+
+    /* Main Content */
+    .main-content {
+      margin-left: 240px;
+      margin-top: 56px;
+      padding: 24px;
+      transition: margin-left 0.2s;
+      min-height: calc(100vh - 56px);
+    }
+
+    .main-content.expanded {
+      margin-left: 0;
+    }
+
+    .page-section {
+      display: none;
+      animation: fadein 0.3s;
+    }
+    .page-section.active {
+      display: block;
+    }
+    @keyframes fadein {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Controls / sort pills */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      background: var(--hover);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 4px 12px;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+    }
+    select.btn {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-left: 6px;
+      font-size: 14px;
+      padding: 3px 8px;
+    }
+
+    /* Video Grid */
+    .video-grid, .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+      margin-top: 20px;
+    }
+
+    .video-card, .card {
+      background: var(--card);
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: 0.3s box-shadow, 0.3s transform;
+      box-shadow: 0 2px 10px #0002;
+      will-change: transform, box-shadow;
+      display: flex;
+      flex-direction: column;
+      min-height: 220px;
+    }
+
+    .video-card:hover, .card:hover {
+      transform: translateY(-4px) scale(1.025);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      z-index: 2;
+    }
+
+    .video-thumbnail, .thumb {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #222;
+      overflow: hidden;
+      display: block;
+      object-fit: cover;
+    }
+
+    .video-thumbnail img, .thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: 0.3s transform;
+      background: #222;
+      display: block;
+    }
+
+    .video-card:hover .video-thumbnail img,
+    .card:hover .thumb {
+      transform: scale(1.05);
+    }
+
+    .play-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.7);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .video-card:hover .play-overlay, .card:hover .play-overlay {
+      opacity: 1;
+    }
+
+    .play-icon {
+      color: white;
+      font-size: 24px;
+      margin-left: 4px;
+    }
+
+    .video-info, .meta {
+      padding: 16px;
+      flex: 1 1 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .video-title, .title {
+      font-size: 16px;
+      font-weight: 500;
+      margin: 0 0 8px 0;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 44px;
+    }
+
+    .video-meta, .sub {
+      color: #aaa;
+      font-size: 14px;
+      margin: 4px 0;
+    }
+    .video-channel, .sub {
+      color: #aaa;
+      font-size: 14px;
+      margin: 4px 0;
+    }
+    .video-channel:hover {
+      color: var(--text);
+    }
+    .actions {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .icon-btn {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+      transition: background 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .icon-btn:hover {
+      background: var(--hover);
+      color: var(--accent);
+    }
+
+    /* Modal player */
+    .modal, .video-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.92);
+      z-index: 2000;
+      padding: 20px;
+      box-sizing: border-box;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.active, .video-modal.active {
+      display: flex;
+    }
+    .modal-inner, .modal-content {
+      width: 100%;
+      max-width: 900px;
+      max-height: 90vh;
+      background: var(--card);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 6px 32px #000a;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .modal-close, .close-btn {
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      transition: background 0.2s;
+      position: absolute;
+      right: 24px;
+      top: 18px;
+      z-index: 10;
+    }
+    .modal-close:hover, .close-btn:hover {
+      background: var(--hover);
+    }
+    .player, .video-player {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      display: block;
+      border: none;
+    }
+    .video-details {
+      padding: 20px;
+    }
+    .video-details h2 {
+      margin: 0 0 12px 0;
+      font-size: 20px;
+      color: var(--text);
+    }
+    .video-stats {
+      display: flex;
+      gap: 20px;
+      color: #aaa;
+      font-size: 14px;
+      margin: 12px 0;
+      flex-wrap: wrap;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 32px;
+      transform: translateX(-50%);
+      background: #181818;
+      color: #fff;
+      padding: 12px 32px;
+      border-radius: 24px;
+      box-shadow: 0 2px 18px #0006;
+      font-size: 15px;
+      opacity: 0;
+      z-index: 3000;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .toast.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .toast.ok {
+      background: #308b4a;
+      color: #fff;
+    }
+
+    /* About Page */
+    .about-content {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .about-content h2 {
+      color: var(--accent);
+      font-size: 28px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .about-content p {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      color: #ccc;
+    }
+
+    /* Submit Form */
+    .submit-form {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: 0 2px 14px #0003;
+    }
+    .form-group {
+      margin-bottom: 24px;
+    }
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+      resize: vertical;
+    }
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+    .submit-btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+      width: 100%;
+    }
+    .submit-btn:hover {
+      background: #cc3333;
+    }
+
+    /* Loading */
+    .loading, .info {
+      text-align: center;
+      padding: 40px;
+      color: #aaa;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .main-content {
+        padding: 16px;
+      }
+      .about-content, .submit-form {
+        padding: 28px 10px;
+      }
+      .modal-inner, .modal-content {
+        margin: 10px;
+        width: calc(100% - 20px);
+      }
+    }
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-240px);
+      }
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+        padding: 10px;
+      }
+      .search-container {
+        margin: 0 8px;
+      }
+      .video-grid, .grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+      }
+      .modal-inner, .modal-content {
+        margin: 5px;
+        width: calc(100% - 10px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <button class="menu-btn" id="sidebarToggleBtn" aria-label="Toggle Sidebar">☰</button>
+      <a href="#" class="logo" style="gap:4px;">
+        <img src="https://i.ibb.co/Kpp8RjCt/20250830-232559.png" alt="DarkTube Logo" class="logo-img">
+      </a>
+    </div>
+    <div class="search" style="max-width: 150px;">
+      <input id="q" type="search" placeholder="Searching..." autocomplete="off" />
+      <button class="btn" id="clearBtn" title="Bersihkan" style="display:none"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="mini-stats">
+      <span id="statTotal">Total: 0</span>
+      <span id="statUploaders">Uploader: 0</span>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <nav class="sidebar" id="sidebar" aria-label="Sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-item active" data-view="home">
+        <span class="sidebar-icon"><i class="fa-solid fa-house-chimney"></i></span>
+        <span>Beranda</span>
+      </div>
+      <div class="sidebar-item" data-view="favorites">
+        <span class="sidebar-icon"><i class="fa-solid fa-star"></i></span>
+        <span>Favorites</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-item" data-view="about">
+        <span class="sidebar-icon"><i class="fa-solid fa-circle-info"></i></span>
+        <span>Tentang</span>
+      </div>
+      <div class="sidebar-item" data-view="tos">
+        <span class="sidebar-icon"><i class="fa-solid fa-file-contract"></i></span>
+        <span>Ketentuan</span>
+      </div>
+      <div class="sidebar-item" data-view="submit">
+        <span class="sidebar-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+        <span>Kirim Video</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content" id="mainContent">
+    <!-- Controls -->
+    <div class="controls" style="margin-bottom:18px;">
+      <div class="pill">Sort:
+        <select id="sort" class="btn" style="margin-left:6px">
+          <option value="newest">Newest</option>
+          <option value="username">Username A→Z</option>
+          <option value="random">Random</option>
+        </select>
+      </div>
+      <!-- Favorites & Refresh -->
+      <button class="icon-btn" id="viewFavsBtn" title="Lihat Favorites"><i class="fa-solid fa-star"></i></button>
+      <button class="icon-btn" id="refresh" title="Refresh data"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+      <span class="pill" id="activeView" style="margin-left:8px;">DarkTube v1</span>
+    </div>
+
+    <!-- Home Section -->
+    <section class="page-section active" id="home">
+      <div id="grid" class="grid">
+        <div class="info" id="loading">Memuat video...</div>
+      </div>
+    </section>
+
+    <!-- Favorites Section -->
+    <section class="page-section" id="favorites">
+      <h1><i class="fa-solid fa-star"></i> Favorites</h1>
+      <div class="grid" id="favoritesGrid"></div>
+    </section>
+
+    <!-- About Section -->
+    <section class="page-section" id="about">
+      <div class="about-content">
+        <h2>Tentang DarkTube</h2>
+        <p>
+          <strong>DarkTube</strong> adalah platform yang menyelami sisi gelap dari internet, menyajikan konten-konten yang dilarang, tersembunyi, dan ditolak oleh sistem mainstream. Kami menghadirkan [...]
+        </p>
+        <p>
+          Di sini, tidak ada sensor. Tidak ada filter. Hanya kebenaran telanjang yang tidak berani ditampilkan oleh platform lain. Kami mengumpulkan serpihan-serpihan konten yang hilang dalam labirin [...]
+        </p>
+        <p>
+          Platform ini diciptakan sebagai bentuk perlawanan terhadap tirani algoritma dan sensor korporat. Sebuah tempat di mana kegelapan dapat bernapas bebas, di mana yang terlarang menjadi aksesibl[...]
+        </p>
+        <p style="color: #ff4444; font-weight: 500;">
+          ⚠️ Masuki dengan risiko sendiri. Yang Anda saksikan di sini mungkin akan mengubah cara Anda memandang dunia. Beberapa kebenaran terlalu kelam untuk dilupakan.
+        </p>
+      </div>
+    </section>
+
+    <!-- Terms of Service -->
+    <section class="page-section" id="tos">
+      <div class="about-content">
+        <h2>Ketentuan Layanan</h2>
+        <p>
+          Dengan menggunakan DarkTube, Anda setuju untuk mematuhi ketentuan layanan berikut:
+        </p>
+        <ol style="color: #ccc; font-size: 16px;">
+          <li>Konten yang ditampilkan di platform ini bersumber dari berbagai kontributor dan mungkin mengandung materi yang bersifat eksperimental atau non-mainstream.</li>
+          <li>Pengguna bertanggung jawab atas penggunaan platform ini dan diharapkan untuk menggunakan dengan bijak.</li>
+          <li>Kami tidak bertanggung jawab atas konten yang dibuat oleh pengguna atau pihak ketiga.</li>
+          <li>Ketentuan layanan ini dapat berubah sewaktu-waktu tanpa pemberitahuan sebelumnya.</li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- Submit Section -->
+    <section class="page-section" id="submit">
+      <form class="submit-form" onsubmit="submitVideo(event)">
+        <h2 style="text-align: center; color: var(--accent); margin-bottom: 30px;">📤 Kirim Video</h2>
+        <p style="text-align: center; color: #aaa; margin-bottom: 30px;">
+          Bagikan video menarik Anda dengan komunitas DarkTube
+        </p>
+        <div class="form-group">
+          <label class="form-label" for="videoUrl">Link YouTube Video:</label>
+          <input type="url" id="videoUrl" class="form-input" placeholder="https://youtube.com/watch?v=..." required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="username">Username Anda:</label>
+          <input type="text" id="username" class="form-input" placeholder="Masukkan username Anda" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="description">Deskripsi Video:</label>
+          <textarea id="description" class="form-input" rows="4" placeholder="Ceritakan tentang video Anda..." required></textarea>
+        </div>
+        <button class="submit-btn" type="submit">Kirim Video</button>
+        <p style="text-align: center; margin-top: 20px; color: #aaa; font-size: 14px;">
+          Atau gunakan <a href="https://forms.gle/GvHY4th5bKzKjj2V7" target="_blank" style="color: var(--accent);">Google Form</a>
+        </p>
+      </form>
+    </section>
+  </main>
+
+  <!-- Modal Player -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-inner">
+      <button class="modal-close" id="closeModal"><i class="fa-solid fa-xmark"></i></button>
+      <iframe id="player" class="player" allow="autoplay; encrypted-media" allowfullscreen title="YouTube player"></iframe>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast">Toast</div>
+
+  <script>
+    // ====== CONFIG ======
+    const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnVXYhGBJHAcuOPM3j8quHA4DK_5pLg8vIWzKucISoWQSL1J9OCVom3W7frsub9B3ufIAmpBZw0qsF/pub?output=csv";
+    const KEY_FAVS = "darktube_favs_v1";
+
+    // ====== STATE ======
+    let RAW = [];
+    let VIEW = "home"; // home | favorites
+    let FAVS = new Set(JSON.parse(localStorage.getItem(KEY_FAVS) || "[]"));
+
+    // ====== EL REFS ======
+    const grid = document.getElementById("grid");
+    const favoritesGrid = document.getElementById("favoritesGrid");
+    const loading = document.getElementById("loading");
+    const q = document.getElementById("q");
+    const clearBtn = document.getElementById("clearBtn");
+    const sortSel = document.getElementById("sort");
+    const statTotal = document.getElementById("statTotal");
+    const statUploaders = document.getElementById("statUploaders");
+    const activeView = document.getElementById("activeView");
+    const refreshBtn = document.getElementById("refresh");
+    const toastEl = document.getElementById("toast");
+    const modal = document.getElementById("modal");
+    const player = document.getElementById("player");
+    const closeModalBtn = document.getElementById("closeModal");
+    const viewFavsBtn = document.getElementById("viewFavsBtn");
+    const sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
+    const sidebar = document.getElementById("sidebar");
+    const mainContent = document.getElementById("mainContent");
+
+    // ====== HELPERS ======
+    const showToast = (msg, ok=false) => {
+      toastEl.textContent = msg;
+      toastEl.classList.toggle("ok", !!ok);
+      toastEl.classList.add("show");
+      setTimeout(()=> toastEl.classList.remove("show"), 1400);
+    };
+
+    function ytIdFrom(url){
+      if(!url) return null;
+      const rx = /^.*(?:youtu\.be\/|v\/|embed\/|watch\?v=|&v=)([^#&?]{11}).*/;
+      const m = url.match(rx);
+      return m ? m[1] : null;
+    }
+    const thumbFromId = (id) => `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+
+    function saveFavs(){
+      localStorage.setItem(KEY_FAVS, JSON.stringify(Array.from(FAVS)));
+    }
+
+    // ====== RENDER ======
+    function computeStats(list){
+      const total = list.length;
+      const uploaders = new Set(list.map(v => (v["Your Username?"] || "Anon")));
+      statTotal.textContent = `Total: ${total}`;
+      statUploaders.textContent = `Uploader: ${uploaders.size}`;
+    }
+
+    function cardTemplate(item){
+      const user = item["Your Username?"] || "Anon";
+      const url = item["A YouTube Video Link!"] || "";
+      const id = ytIdFrom(url);
+      const desc = item["description"] || "";
+      if(!id) return "";
+
+      const favActive = FAVS.has(id) ? " style='color:#ffd166'" : "";
+      return `
+        <article class="card" data-id="${id}" data-user="${user.toLowerCase()}">
+          <img loading="lazy" src="${thumbFromId(id)}" alt="Thumbnail ${user}" class="thumb" />
+          <div class="meta">
+            <h3 class="title">${desc ? escapeHTML(desc) : "Video dari " + escapeHTML(user)}</h3>
+            <p class="sub">Sender: ${escapeHTML(user)}</p>
+            <div class="actions">
+              <button class="icon-btn" data-action="play"><i class="fa-solid fa-play"></i> Play</button>
+              <button class="icon-btn" data-action="share"><i class="fa-solid fa-share-nodes"></i> Share</button>
+              <button class="icon-btn" data-action="fav"><i class="fa-solid fa-star"${favActive}></i> Favorite</button>
+              <a class="icon-btn" href="${url}" target="_blank" rel="noopener"><i class="fa-brands fa-youtube"></i> YouTube</a>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function applySort(list){
+      const mode = sortSel.value;
+      if(mode === "username"){
+        list.sort((a,b)=> (a["Your Username?"]||"").localeCompare(b["Your Username?"]||""));
+      } else if(mode === "random"){
+        for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [list[i],list[j]]=[list[j],list[i]];}
+      } else { // newest by Timestamp (best-effort)
+        list.sort((a,b)=> new Date(b["Timestamp"]||0) - new Date(a["Timestamp"]||0));
+      }
+      return list;
+    }
+
+    function filteredList(){
+      const term = (q.value||"").toLowerCase().trim();
+      let list = RAW.filter(v => ytIdFrom(v["A YouTube Video Link!"]));
+      if(VIEW === "favorites"){
+        list = list.filter(v => FAVS.has(ytIdFrom(v["A YouTube Video Link!"])));
+      }
+      if(term){
+        list = list.filter(v => {
+          const user = (v["Your Username?"]||"").toLowerCase();
+          const desc = (v["description"]||"").toLowerCase();
+          const url = (v["A YouTube Video Link!"]||"").toLowerCase();
+          return user.includes(term) || desc.includes(term) || url.includes(term);
+        });
+      }
+      return applySort(list);
+    }
+
+    function render(){
+      const list = filteredList();
+      computeStats(list);
+      if(VIEW === "favorites"){
+        if(!list.length){
+          favoritesGrid.innerHTML = `<div class="info">Tidak ada video di Favorites. Klik ⭐ pada video untuk menyimpan.</div>`;
+          return;
+        }
+        favoritesGrid.innerHTML = list.map(cardTemplate).join("");
+        bindCardActions(favoritesGrid, list);
+      } else {
+        if(!list.length){
+          grid.innerHTML = `<div class="info">Tidak ada video.</div>`;
+          return;
+        }
+        grid.innerHTML = list.map(cardTemplate).join("");
+        bindCardActions(grid, list);
+      }
+    }
+
+    function bindCardActions(container, list) {
+      container.querySelectorAll(".card").forEach(card=>{
+        const id = card.dataset.id;
+        const url = (RAW.find(v => ytIdFrom(v["A YouTube Video Link!"])===id) || {})["A YouTube Video Link!"] || "";
+
+        card.querySelector('[data-action="play"]').onclick = ()=> openModal(id);
+        card.querySelector('[data-action="share"]').onclick = async ()=>{
+          try{
+            await navigator.clipboard.writeText(url);
+            showToast("Link copied!", true);
+          }catch(e){
+            showToast("Gagal copy link");
+          }
+        };
+        card.querySelector('[data-action="fav"]').onclick = (e)=>{
+          if(FAVS.has(id)) FAVS.delete(id); else FAVS.add(id);
+          saveFavs();
+          // update icon color
+          const icon = e.currentTarget.querySelector("i");
+          icon.style.color = FAVS.has(id) ? "#ffd166" : "";
+          showToast(FAVS.has(id) ? "Added to Favorites" : "Removed from Favorites", true);
+          if(VIEW==="favorites") render();
+        };
+      });
+    }
+
+    // ====== MODAL ======
+    function openModal(id){
+      player.src = `https://www.youtube.com/embed/${id}?autoplay=1&rel=0`;
+      modal.classList.add("active");
+      modal.setAttribute("aria-hidden","false");
+      document.body.style.overflow="hidden";
+      CURRENT_ID = id;
+    }
+    function closeModal(){
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden","true");
+      player.src = "";
+      document.body.style.overflow="";
+    }
+    let CURRENT_ID = null;
+    document.addEventListener("keydown", (e)=>{
+      if(!modal.classList.contains("active")) return;
+      if(e.key === "Escape") closeModal();
+    });
+    modal.addEventListener("click", (e)=>{ if(e.target===modal) closeModal(); });
+    closeModalBtn.onclick = closeModal;
+
+    // ====== LOAD ======
+    function load(){
+      loading.style.display = "";
+      Papa.parse(SHEET_CSV, {
+        download:true, header:true, skipEmptyLines:true,
+        complete: (res)=>{
+          RAW = res.data.filter(r => r["A YouTube Video Link!"]);
+          loading.style.display = "none";
+          render();
+        },
+        error: ()=>{
+          grid.innerHTML = `<div class="info">Gagal memuat CSV.</div>`;
+        }
+      });
+    }
+
+    // ====== EVENTS ======
+    q.addEventListener("input", ()=>{
+      clearBtn.style.display = q.value ? "" : "none";
+      render();
+    });
+    clearBtn.addEventListener("click", ()=>{ q.value=""; clearBtn.style.display="none"; render(); });
+    sortSel.addEventListener("change", render);
+
+    // Sidebar navigation improved: use data-view for clarity and less error-prone
+    document.querySelectorAll(".sidebar-item[data-view]").forEach(item=>{
+      item.addEventListener("click", (e)=>{
+        document.querySelectorAll(".sidebar-item").forEach(x=>x.classList.remove("active"));
+        item.classList.add("active");
+        const view = item.getAttribute("data-view");
+        document.querySelectorAll('.page-section').forEach(section => section.classList.remove('active'));
+        document.getElementById(view).classList.add('active');
+        // If home/favs switch grid, else don't
+        if(view === "home" || view === "favorites"){
+          VIEW = view;
+          activeView.textContent = "View: " + (VIEW==="favorites"?"Favorites":"Home");
+          render();
+        }
+        if(window.innerWidth <= 768) sidebar.classList.remove("show");
+      });
+    });
+
+    refreshBtn.addEventListener("click", (e)=>{ e.preventDefault(); load(); showToast("Data refreshed", true); });
+    viewFavsBtn.addEventListener("click", ()=>{
+      VIEW = (VIEW==="favorites" ? "home" : "favorites");
+      activeView.textContent = "View: " + (VIEW==="favorites"?"Favorites":"Home");
+      render();
+      // show tab
+      document.querySelectorAll('.page-section').forEach(section => section.classList.remove('active'));
+      document.getElementById(VIEW).classList.add('active');
+      document.querySelectorAll(".sidebar-item").forEach(x=>x.classList.remove("active"));
+      document.querySelector(`.sidebar-item[data-view="${VIEW}"]`)?.classList.add('active');
+    });
+
+    // Sidebar toggle
+    let sidebarCollapsed = false;
+    sidebarToggleBtn.addEventListener('click', ()=>{
+      if (window.innerWidth <= 768) {
+        sidebar.classList.toggle('show');
+      } else {
+        sidebarCollapsed = !sidebarCollapsed;
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+      }
+    });
+
+    // Section navigation for non-sidebar triggers (for direct function use)
+    function showSection(event, sectionName) {
+      document.querySelectorAll('.page-section').forEach(section => section.classList.remove('active'));
+      document.querySelectorAll('.sidebar-item').forEach(item => item.classList.remove('active'));
+      document.getElementById(sectionName).classList.add('active');
+      document.querySelector(`.sidebar-item[data-view="${sectionName}"]`)?.classList.add('active');
+      if (window.innerWidth <= 768) {
+        sidebar.classList.remove('show');
+      }
+      if(sectionName === 'home'){
+        VIEW = "home";
+        activeView.textContent = "View: Home";
+        render();
+      }
+      if(sectionName === 'favorites'){
+        VIEW = "favorites";
+        activeView.textContent = "View: Favorites";
+        render();
+      }
+    }
+
+    // Submit video
+    function submitVideo(event) {
+      event.preventDefault();
+      showToast('Fitur submit video akan segera hadir! Sementara gunakan Google Form yang tersedia.');
+      event.target.reset();
+    }
+
+    // HTML escaping utility for XSS safety
+    function escapeHTML(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Init
+    load();
+    setInterval(load, 300000);
+
+    // Accessibility: allow closing modal with Escape globally
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape") closeModal();
+    });
+
+    // Responsive: hide sidebar on resize if necessary
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 768) {
+        sidebar.classList.remove('show');
+      }
+    });
+
+  </script>
+</body>
+</html>
